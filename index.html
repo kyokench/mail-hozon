@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>メール文章ライブラリ</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <h1>メール文章ライブラリ</h1>
+      <p>メール文面を保存・整理・検索</p>
+    </div>
+
+    <nav class="nav-group">
+      <button class="nav-item active" data-view="all">
+        <span>📚 すべて</span><b id="countAll">0</b>
+      </button>
+      <button class="nav-item" data-view="favorites" data-drop="favorites">
+        <span>★ お気に入り</span><b id="countFavorites">0</b>
+      </button>
+      <button class="nav-item" data-view="unfiled" data-drop="unfiled">
+        <span>🗂 未分類</span><b id="countUnfiled">0</b>
+      </button>
+    </nav>
+
+    <div class="folder-header">
+      <span>フォルダ</span>
+      <button id="addFolderBtn" title="フォルダ追加">＋</button>
+    </div>
+    <div id="folderList" class="folder-list"></div>
+
+    <div class="sidebar-note">
+      メールカードをフォルダへ移動できます。<br>
+      ⠿をドラッグするとフォルダを並べ替えられます。
+    </div>
+
+    <div class="storage-note">
+      保存先：IndexedDB
+    </div>
+
+    <div class="sidebar-bottom">
+      <button id="exportBtn" class="sub-button">バックアップ</button>
+      <button id="exportFolderBtn" class="sub-button" disabled title="フォルダを選択すると使用できます">現フォルダ</button>
+      <label class="sub-button file-label">
+        復元
+        <input id="importInput" type="file" accept="application/json">
+      </label>
+    </div>
+  </aside>
+
+  <main class="content">
+    <header class="topbar">
+      <div class="search-area">
+        <input id="searchInput" type="search" placeholder="タイトル・本文・タグ・相手先を検索">
+        <select id="tagFilter">
+          <option value="">すべてのタグ</option>
+        </select>
+      </div>
+      <label id="txtImportDrop" class="sub-button file-label txt-import-button" title="サイボウズ Officeから出力したTXTを選択またはドロップ">
+        TXT取込
+        <input id="txtImportInput" type="file" accept=".txt,text/plain" multiple>
+      </label>
+      <button id="newBtn" class="primary-button">＋ 新規保存</button>
+    </header>
+
+    <section id="editorPanel" class="editor-panel hidden">
+      <div class="editor-title-row">
+        <h2 id="editorHeading">メール文章を保存</h2>
+        <button id="closeEditorBtn" class="icon-button" title="閉じる">×</button>
+      </div>
+
+      <div class="form-grid">
+        <label>
+          <span>タイトル</span>
+          <input id="titleInput" type="text" placeholder="例：見積書送付">
+        </label>
+        <label>
+          <span>相手先・会社名など</span>
+          <input id="counterpartInput" type="text" placeholder="任意">
+        </label>
+        <label>
+          <span>フォルダ</span>
+          <select id="folderSelect"></select>
+        </label>
+        <label>
+          <span>メール日時</span>
+          <div class="datetime-wrap">
+            <input id="mailDateInput" type="datetime-local">
+            <button id="nowBtn" type="button" class="sub-button">現在日時</button>
+          </div>
+        </label>
+      </div>
+
+      <label class="full-label">
+        <span>メール文章</span>
+        <textarea id="bodyInput" rows="14" placeholder="保存したいメール文章を貼り付けてください"></textarea>
+      </label>
+
+      <div id="attachmentDropZone" class="attachment-editor">
+        <div class="attachment-heading">
+          <div>
+            <span>添付ファイル</span>
+            <small>複数選択可（1ファイル25MB、合計50MBまで）</small>
+          </div>
+          <label class="sub-button file-label">
+            ＋ ファイルを選択
+            <input id="attachmentInput" type="file" multiple>
+          </label>
+        </div>
+        <div id="attachmentList" class="attachment-list empty-attachments">添付ファイルはありません。ここへドラッグ＆ドロップできます</div>
+      </div>
+
+      <div class="form-grid bottom-grid">
+        <label>
+          <span>タグ</span>
+          <input id="tagsInput" type="text" placeholder="例：見積, 取引先, よく使う">
+        </label>
+        <label class="favorite-check">
+          <input id="favoriteInput" type="checkbox">
+          <span>★ お気に入り</span>
+        </label>
+      </div>
+
+      <div class="editor-actions">
+        <button id="cancelBtn" class="sub-button">キャンセル</button>
+        <button id="saveBtn" class="primary-button">保存</button>
+      </div>
+    </section>
+
+    <section class="list-section">
+      <div class="section-heading">
+        <div>
+          <h2 id="viewTitle">すべて</h2>
+          <span id="resultCount">0件</span>
+        </div>
+        <div class="list-controls">
+          <span class="hint">クリックすると大きく表示します</span>
+          <div class="view-switch" role="group" aria-label="表示形式">
+            <button id="cardViewBtn" type="button" class="active" aria-pressed="true" title="カード表示">▦ カード</button>
+            <button id="lineViewBtn" type="button" aria-pressed="false" title="1行表示">☷ 文字</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="cardList" class="card-list"></div>
+    </section>
+  </main>
+</div>
+
+<div id="viewerOverlay" class="overlay hidden" aria-hidden="true">
+  <section id="viewerModal" class="viewer-modal" role="dialog" aria-modal="true" aria-labelledby="viewerTitle">
+    <div class="viewer-top">
+      <div class="viewer-title-wrap">
+        <button id="viewerFavoriteBtn" class="star-button" title="お気に入り">☆</button>
+        <div>
+          <h2 id="viewerTitle"></h2>
+          <div id="viewerMeta" class="viewer-meta"></div>
+        </div>
+      </div>
+      <div class="viewer-top-actions">
+        <button id="viewerMaxBtn" class="icon-button" title="最大化">⛶</button>
+        <button id="viewerCloseBtn" class="icon-button" title="閉じる">×</button>
+      </div>
+    </div>
+
+    <div id="viewerTags" class="viewer-tags"></div>
+    <div id="viewerBody" class="viewer-body"></div>
+    <div id="viewerAttachments" class="viewer-attachments hidden"></div>
+
+    <div class="viewer-actions">
+      <button id="viewerCopyBtn" class="sub-button">本文コピー</button>
+      <button id="viewerEditBtn" class="sub-button">編集</button>
+      <span></span>
+      <button id="viewerDeleteBtn" class="danger-button">削除</button>
+    </div>
+  </section>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
