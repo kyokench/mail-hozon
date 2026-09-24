@@ -61,6 +61,8 @@ const E = {
   viewerTitle: el("viewerTitle"),
   viewerMeta: el("viewerMeta"),
   viewerTags: el("viewerTags"),
+  viewerHeaderBtn: el("viewerHeaderBtn"),
+  viewerHeaderDetails: el("viewerHeaderDetails"),
   viewerBody: el("viewerBody"),
   viewerAttachments: el("viewerAttachments"),
   viewerMaxBtn: el("viewerMaxBtn"),
@@ -278,6 +280,10 @@ function formatFileSize(bytes){
 
 function bodyExcerpt(body){
   return String(body || "").replace(/\s+/g, " ").trim();
+}
+
+function visibleCounterpart(item){
+  return item.sender || item.recipients || item.cc ? "" : item.counterpart;
 }
 
 function decodeMimeHeader(value){
@@ -662,7 +668,7 @@ function render(){
       </button>
       <h3 title="${esc(item.title)}">${esc(item.title)}</h3>
       <span class="line-excerpt" title="${esc(bodyExcerpt(item.body))}">${esc(bodyExcerpt(item.body))}</span>
-      <span class="line-counterpart" title="${esc(item.counterpart)}">${item.counterpart ? `👤 ${esc(item.counterpart)}` : ""}</span>
+      <span class="line-counterpart" title="${esc(visibleCounterpart(item))}">${visibleCounterpart(item) ? `👤 ${esc(visibleCounterpart(item))}` : ""}</span>
       <span class="line-folder" title="${esc(folderName(item.folderId))}">📁 ${esc(folderName(item.folderId))}</span>
       <span class="line-tags" title="${esc(item.tags.join(", "))}">${item.tags.map(t => `#${esc(t)}`).join(" ")}</span>
       <span class="line-attachment">
@@ -688,7 +694,7 @@ function render(){
           <h3>${esc(item.title)}</h3>
           <div class="meta">
             <span class="pill">📁 ${esc(folderName(item.folderId))}</span>
-            ${item.counterpart ? `<span class="pill">👤 ${esc(item.counterpart)}</span>` : ""}
+            ${visibleCounterpart(item) ? `<span class="pill">👤 ${esc(visibleCounterpart(item))}</span>` : ""}
             ${item.attachments.length ? `<span class="pill">📎 ${item.attachments.length}件</span>` : ""}
           </div>
         </div>
@@ -806,13 +812,21 @@ async function saveCurrent(){
 
 function openViewer(item){
   state.viewerId = item.id;
+  const hasImportedHeaders = Boolean(item.sender || item.recipients || item.cc);
   E.viewerTitle.textContent = item.title;
   E.viewerMeta.innerHTML =
     `<span>📁 ${esc(folderName(item.folderId))}</span>` +
-    (item.counterpart ? `<span>👤 ${esc(item.counterpart)}</span>` : "") +
-    (item.recipients ? `<span>宛先: ${esc(item.recipients)}</span>` : "") +
-    (item.cc ? `<span>CC: ${esc(item.cc)}</span>` : "") +
+    (!hasImportedHeaders && item.counterpart ? `<span>👤 ${esc(item.counterpart)}</span>` : "") +
     `<span>🕒 ${esc(formatDate(item.mailDate))}</span>`;
+  E.viewerHeaderBtn.classList.toggle("hidden", !hasImportedHeaders);
+  E.viewerHeaderBtn.setAttribute("aria-expanded", "false");
+  E.viewerHeaderBtn.textContent = "メール情報";
+  E.viewerHeaderDetails.classList.add("hidden");
+  E.viewerHeaderDetails.innerHTML = hasImportedHeaders ? `
+    ${item.sender ? `<div><b>From</b><span>${esc(item.sender)}</span></div>` : ""}
+    ${item.recipients ? `<div><b>To</b><span>${esc(item.recipients)}</span></div>` : ""}
+    ${item.cc ? `<div><b>Cc</b><span>${esc(item.cc)}</span></div>` : ""}
+  ` : "";
   E.viewerTags.innerHTML = item.tags.map(t => `<span class="pill">#${esc(t)}</span>`).join("");
   E.viewerBody.textContent = item.body;
   E.viewerAttachments.classList.toggle("hidden", !item.attachments.length);
@@ -1110,6 +1124,12 @@ E.viewerMaxBtn.addEventListener("click", () => {
   const on = E.viewerModal.classList.toggle("maximized");
   E.viewerMaxBtn.textContent = on ? "🗗" : "⛶";
   E.viewerMaxBtn.title = on ? "元のサイズに戻す" : "最大化";
+});
+
+E.viewerHeaderBtn.addEventListener("click", () => {
+  const expanded = E.viewerHeaderDetails.classList.toggle("hidden") === false;
+  E.viewerHeaderBtn.setAttribute("aria-expanded", String(expanded));
+  E.viewerHeaderBtn.textContent = expanded ? "メール情報を閉じる" : "メール情報";
 });
 
 E.viewerCopyBtn.addEventListener("click", async () => {

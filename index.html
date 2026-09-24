@@ -33,15 +33,6 @@
     </div>
     <div id="folderList" class="folder-list"></div>
 
-    <div class="sidebar-note">
-      メールカードをフォルダへ移動できます。<br>
-      ⠿をドラッグするとフォルダを並べ替えられます。
-    </div>
-
-    <div class="storage-note">
-      保存先：IndexedDB
-    </div>
-
     <div class="sidebar-bottom">
       <button id="exportBtn" class="sub-button">バックアップ</button>
       <button id="exportFolderBtn" class="sub-button" disabled title="フォルダを選択すると使用できます">現フォルダ</button>
@@ -162,20 +153,20 @@
         </div>
       </div>
       <div class="viewer-top-actions">
+        <button id="viewerHeaderBtn" class="sub-button hidden" type="button" aria-expanded="false">メール情報</button>
+        <button id="viewerCopyBtn" class="sub-button" type="button">本文コピー</button>
+        <button id="viewerEditBtn" class="sub-button" type="button">編集</button>
+        <button id="viewerDeleteBtn" class="danger-button" type="button">削除</button>
         <button id="viewerMaxBtn" class="icon-button" title="最大化">⛶</button>
         <button id="viewerCloseBtn" class="icon-button" title="閉じる">×</button>
       </div>
     </div>
 
     <div id="viewerTags" class="viewer-tags"></div>
-    <div id="viewerBody" class="viewer-body"></div>
-    <div id="viewerAttachments" class="viewer-attachments hidden"></div>
-
-    <div class="viewer-actions">
-      <button id="viewerCopyBtn" class="sub-button">本文コピー</button>
-      <button id="viewerEditBtn" class="sub-button">編集</button>
-      <span></span>
-      <button id="viewerDeleteBtn" class="danger-button">削除</button>
+    <div id="viewerHeaderDetails" class="viewer-header-details hidden"></div>
+    <div class="viewer-scroll-area">
+      <div id="viewerBody" class="viewer-body"></div>
+      <div id="viewerAttachments" class="viewer-attachments hidden"></div>
     </div>
   </section>
 </div>
