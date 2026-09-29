@@ -209,3 +209,14 @@ textarea{resize:vertical;line-height:1.6}
   .viewer-body{margin-left:14px;margin-right:14px;padding:20px}
   .viewer-attachments{padding-left:14px;padding-right:14px}
 }
+
+.excerpt-control{display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:12px;color:var(--muted)}
+.excerpt-control select{width:auto;padding:6px 9px;font-size:12px}
+.hide-excerpts .line-excerpt,.hide-excerpts .card-body{display:none}
+.hide-excerpts .line-card{grid-template-columns:28px minmax(320px,3.1fr) minmax(90px,.8fr) minmax(90px,.7fr) minmax(90px,.8fr) minmax(100px,1fr) 120px auto}
+.hide-excerpts .card-attachments{margin-top:10px}
+.card h3{overflow-wrap:anywhere}
+@media(max-width:900px){
+  .hide-excerpts .line-card{grid-template-columns:24px minmax(0,1fr) minmax(0,1fr) auto}
+  .hide-excerpts .line-card h3{grid-column:2/4}
+}

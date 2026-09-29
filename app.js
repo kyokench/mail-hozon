@@ -5,6 +5,7 @@ const ITEMS_STORE = "items";
 const FOLDERS_STORE = "folders";
 const LEGACY_LOCALSTORAGE_KEY = "mailTextLibraryWebApp_v1";
 const VIEW_MODE_KEY = "mailTextLibraryViewMode";
+const EXCERPT_VISIBILITY_KEY = "mailTextLibraryShowExcerpt";
 const MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024;
 const MAX_TOTAL_ATTACHMENT_SIZE = 50 * 1024 * 1024;
 
@@ -13,6 +14,7 @@ const state = {
   folders: [],
   currentView: "all",
   viewMode: localStorage.getItem(VIEW_MODE_KEY) === "line" ? "line" : "card",
+  showExcerpt: localStorage.getItem(EXCERPT_VISIBILITY_KEY) !== "false",
   editingId: null,
   viewerId: null,
   editorAttachments: [],
@@ -54,6 +56,7 @@ const E = {
   resultCount: el("resultCount"),
   cardViewBtn: el("cardViewBtn"),
   lineViewBtn: el("lineViewBtn"),
+  excerptSelect: el("excerptSelect"),
   cardList: el("cardList"),
   viewerOverlay: el("viewerOverlay"),
   viewerModal: el("viewerModal"),
@@ -647,6 +650,8 @@ function filteredItems(){
 
 function render(){
   const items = filteredItems();
+  E.excerptSelect.value = state.showExcerpt ? "show" : "hide";
+  E.cardList.classList.toggle("hide-excerpts", !state.showExcerpt);
   E.viewTitle.textContent = viewName();
   E.resultCount.textContent = `${items.length}件`;
   E.cardList.classList.toggle("line-list", state.viewMode === "line");
@@ -666,7 +671,7 @@ function render(){
       <button class="star-button ${item.favorite ? "on" : ""}" data-action="favorite" title="お気に入り">
         ${item.favorite ? "★" : "☆"}
       </button>
-      <h3 title="${esc(item.title)}">${esc(item.title)}</h3>
+      <h3 title="${esc(!state.showExcerpt && bodyExcerpt(item.body) ? item.title + '\n\n' + bodyExcerpt(item.body) : item.title)}">${esc(item.title)}</h3>
       <span class="line-excerpt" title="${esc(bodyExcerpt(item.body))}">${esc(bodyExcerpt(item.body))}</span>
       <span class="line-counterpart" title="${esc(visibleCounterpart(item))}">${visibleCounterpart(item) ? `👤 ${esc(visibleCounterpart(item))}` : ""}</span>
       <span class="line-folder" title="${esc(folderName(item.folderId))}">📁 ${esc(folderName(item.folderId))}</span>
@@ -691,7 +696,7 @@ function render(){
           <button class="star-button ${item.favorite ? "on" : ""}" data-action="favorite">
             ${item.favorite ? "★" : "☆"}
           </button>
-          <h3>${esc(item.title)}</h3>
+          <h3 title="${esc(!state.showExcerpt && bodyExcerpt(item.body) ? item.title + '\n\n' + bodyExcerpt(item.body) : item.title)}">${esc(item.title)}</h3>
           <div class="meta">
             <span class="pill">📁 ${esc(folderName(item.folderId))}</span>
             ${visibleCounterpart(item) ? `<span class="pill">👤 ${esc(visibleCounterpart(item))}</span>` : ""}
@@ -975,6 +980,12 @@ E.txtImportDrop.addEventListener("drop", async e => {
 });
 E.cardViewBtn.addEventListener("click", () => setViewMode("card"));
 E.lineViewBtn.addEventListener("click", () => setViewMode("line"));
+
+E.excerptSelect.addEventListener("change", () => {
+  state.showExcerpt = E.excerptSelect.value === "show";
+  localStorage.setItem(EXCERPT_VISIBILITY_KEY, String(state.showExcerpt));
+  render();
+});
 
 function setViewMode(mode){
   state.viewMode = mode;
