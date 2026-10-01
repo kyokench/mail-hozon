@@ -131,6 +131,16 @@
         <div class="list-controls">
           <span class="hint">クリックすると大きく表示します</span>
           <label class="excerpt-control">
+            <span>文字サイズ</span>
+            <select id="textSizeSelect" aria-label="全体の文字サイズ">
+              <option value="0.75">最小</option>
+              <option value="0.875">小さめ</option>
+              <option value="1" selected>標準</option>
+              <option value="1.125">大きめ</option>
+              <option value="1.25">最大</option>
+            </select>
+          </label>
+          <label class="excerpt-control">
             <span>抜粋文</span>
             <select id="excerptSelect" aria-label="抜粋文の表示">
               <option value="show">表示</option>

@@ -6,6 +6,15 @@ const FOLDERS_STORE = "folders";
 const LEGACY_LOCALSTORAGE_KEY = "mailTextLibraryWebApp_v1";
 const VIEW_MODE_KEY = "mailTextLibraryViewMode";
 const EXCERPT_VISIBILITY_KEY = "mailTextLibraryShowExcerpt";
+const SMALL_TEXT_KEY = "mailTextLibrarySmallText";
+const TEXT_SIZE_KEY = "mailTextLibraryTextSize";
+const TEXT_SIZES = ["0.75", "0.875", "1", "1.125", "1.25"];
+
+function savedTextSize(){
+  const saved = localStorage.getItem(TEXT_SIZE_KEY);
+  if(TEXT_SIZES.includes(saved)) return saved;
+  return localStorage.getItem(SMALL_TEXT_KEY) === "true" ? "0.875" : "1";
+}
 const MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024;
 const MAX_TOTAL_ATTACHMENT_SIZE = 50 * 1024 * 1024;
 
@@ -15,6 +24,7 @@ const state = {
   currentView: "all",
   viewMode: localStorage.getItem(VIEW_MODE_KEY) === "line" ? "line" : "card",
   showExcerpt: localStorage.getItem(EXCERPT_VISIBILITY_KEY) !== "false",
+  textSize: savedTextSize(),
   editingId: null,
   viewerId: null,
   editorAttachments: [],
@@ -57,6 +67,7 @@ const E = {
   cardViewBtn: el("cardViewBtn"),
   lineViewBtn: el("lineViewBtn"),
   excerptSelect: el("excerptSelect"),
+  textSizeSelect: el("textSizeSelect"),
   cardList: el("cardList"),
   viewerOverlay: el("viewerOverlay"),
   viewerModal: el("viewerModal"),
@@ -986,6 +997,21 @@ E.excerptSelect.addEventListener("change", () => {
   localStorage.setItem(EXCERPT_VISIBILITY_KEY, String(state.showExcerpt));
   render();
 });
+
+function applyTextSize(){
+  document.documentElement.style.setProperty("--text-scale", state.textSize);
+  E.textSizeSelect.value = state.textSize;
+}
+
+E.textSizeSelect.addEventListener("change", () => {
+  const size = E.textSizeSelect.value;
+  if(!TEXT_SIZES.includes(size)) return;
+  state.textSize = size;
+  applyTextSize();
+  localStorage.setItem(TEXT_SIZE_KEY, size);
+});
+
+applyTextSize();
 
 function setViewMode(mode){
   state.viewMode = mode;
